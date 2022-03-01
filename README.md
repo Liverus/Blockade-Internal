@@ -2,6 +2,7 @@
 
 This is an internal cheat for the game BLOCKADE Classic, a free unity-il2cpp game on Steam.
 The only point of this project is to learn IL2CPP API and make my wrappers for it. This is why the features are kinda pointless.
+You can implement your own features by using Il2CppDumper + DnSpy and inspecting the game's assemblies.
 
 ## Features
 - ESP (Sets every player to the same team, we use the game's default ESP)
