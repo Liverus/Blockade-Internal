@@ -45,6 +45,10 @@ namespace IL2CPP {
 		return IL2CPP_ASSEMBLY(assembly_name);
 	}
 
+	IL2CPP_NAMESPACE Namespace(IL2CPP_ASSEMBLY assembly, const char* namespace_name) {
+		return IL2CPP_NAMESPACE(assembly, namespace_name);
+	}
+
 	IL2CPP_OBJECT Object(Il2CppObject* obj) {
 		return IL2CPP_OBJECT(obj);
 	}
@@ -62,6 +66,8 @@ namespace IL2CPP {
 
 // IL2CPP_ASSEMBLY
 
+IL2CPP_ASSEMBLY::IL2CPP_ASSEMBLY() {};
+
 IL2CPP_ASSEMBLY::IL2CPP_ASSEMBLY(Il2CppAssembly* assembly_) {
 	assembly = assembly_;
 }
@@ -75,24 +81,24 @@ Il2CppImage* IL2CPP_ASSEMBLY::image() {
 }
 
 IL2CPP_NAMESPACE IL2CPP_ASSEMBLY::namespaze(const char* namespace_name) {
-	return IL2CPP_NAMESPACE(this, namespace_name);
+	return IL2CPP::Namespace(*this, namespace_name);
 }
 
 IL2CPP_NAMESPACE IL2CPP_ASSEMBLY::global_namespaze() {
-	return IL2CPP_NAMESPACE(this, "");
+	return IL2CPP::Namespace(*this, "");
 }
 
 
 
 // IL2CPP_NAMESPACE
 
-IL2CPP_NAMESPACE::IL2CPP_NAMESPACE(IL2CPP_ASSEMBLY* namespace_assembly, const char* namespace_name) {
+IL2CPP_NAMESPACE::IL2CPP_NAMESPACE(IL2CPP_ASSEMBLY namespace_assembly, const char* namespace_name) {
 	name = namespace_name;
 	assembly = namespace_assembly;
 }
 
 IL2CPP_CLASS IL2CPP_NAMESPACE::klass(const char* klass_name) {
-	return IL2CPP::API::il2cpp_class_from_name(assembly->image(), name, klass_name);
+	return IL2CPP::API::il2cpp_class_from_name(assembly.image(), name, klass_name);
 }
 
 
@@ -186,7 +192,7 @@ IL2CPP_TYPE::IL2CPP_TYPE(Il2CppType* type_) {
 }
 
 IL2CPP_CLASS IL2CPP_TYPE::klass() {
-	return IL2CPP_CLASS(IL2CPP::API::il2cpp_type_get_class_or_element_class(type));
+	return IL2CPP::Klass(IL2CPP::API::il2cpp_type_get_class_or_element_class(type));
 }
 
 const char* IL2CPP_TYPE::name() {

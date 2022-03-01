@@ -45,6 +45,7 @@ namespace IL2CPP
 	IL2CPP_STRING String(const char* name);
 	IL2CPP_STRING String(Il2CppString* str);
 	IL2CPP_ASSEMBLY Assembly(const char* assembly_name);
+	IL2CPP_NAMESPACE Namespace(IL2CPP_ASSEMBLY assembly, const char* namespace_name);
 	IL2CPP_ARRAY Array(Il2CppArray* arr);
 };
 
@@ -53,6 +54,7 @@ namespace IL2CPP
 // IL2CP_ASSEMBLY
 
 struct IL2CPP_ASSEMBLY {
+	IL2CPP_ASSEMBLY();
 	IL2CPP_ASSEMBLY(Il2CppAssembly* assembly);
 	IL2CPP_ASSEMBLY(const char* assembly_name);
 
@@ -69,11 +71,11 @@ struct IL2CPP_ASSEMBLY {
 // IL2CPP_NAMESPACE
 
 struct IL2CPP_NAMESPACE {
-	IL2CPP_NAMESPACE(IL2CPP_ASSEMBLY* assembly, const char* namespace_name);
+	IL2CPP_NAMESPACE(IL2CPP_ASSEMBLY assembly, const char* namespace_name);
 
 	IL2CPP_CLASS klass(const char* class_name);
 
-	IL2CPP_ASSEMBLY* assembly;
+	IL2CPP_ASSEMBLY assembly;
 	const char* name;
 };
 

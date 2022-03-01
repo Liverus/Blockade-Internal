@@ -127,21 +127,27 @@ void vp_Camera_Update(Il2CppObject* this_) {
 
 DWORD WINAPI mainThread(HMODULE hModule)
 {
-	if (hModule) {//while (true) if (GetAsyncKeyState(VK_DELETE) & 1) break;
+	if (hModule) {
 
+		// Initialize Console
 		FILE* f;
 		AllocConsole();
 		freopen_s(&f, "CONOUT$", "w", stdout);
-		//_setmode(_fileno(stdout), _O_U16TEXT);
+		//_setmode(_fileno(stdout), _O_U16TEXT); <-- for utf-16 printing i guess? (Il2CppStrings are 2 bytes chars)
 		
+
+		// Initialize Memory
 		Memory memory;
+
 
 		// Initialize IL2CPP API
 		IL2CPP::Initialize(memory);
 		IL2CPP::Attach();
 
+
 		// Initialize Unity API
 		Unity::Initialize(memory);
+
 
 		// Getting Namespace: Assembly-CSharp
 		auto assembly_csharp  = IL2CPP::Assembly("Assembly-CSharp");
