@@ -51,13 +51,12 @@ RemotePlayersController_Update_t RemotePlayersController_Update_original;
 typedef void(*vp_Camera_Update_t)(void* this_);
 vp_Camera_Update_t vp_Camera_Update_original;
 
-bool aimbot = false;
+
+// Hooks
 
 void RemotePlayersController_Update(Il2CppObject* this_) {
 
-	auto obj = IL2CPP::Object(this_);
-
-//  auto current_player = IL2CPP::Object(obj.get_value<Il2CppObject*>("pgoLocalPlayer"));
+	auto obj          = IL2CPP::Object(this_);
 	auto player_array = IL2CPP::Array(obj.get_value<Il2CppArray*>("RemotePlayersList"));
 
 	for (size_t i = 0; i < player_array.max_length(); i++)
@@ -81,14 +80,6 @@ void RemotePlayersController_Update(Il2CppObject* this_) {
 	return RemotePlayersController_Update_original(this_);
 }
 
-// from stackoverflow
-float RandomFloat(float min, float max)
-{
-	float random = ((float)rand()) / (float)RAND_MAX;
-	float range = max - min;
-	return (random * range) + min;
-}
-
 void vp_Camera_Update(Il2CppObject* this_) {
 
 	// Get our objects
@@ -102,15 +93,7 @@ void vp_Camera_Update(Il2CppObject* this_) {
 	// Set them..
 	controller.set_value("MotorAcceleration",      &new_acceleration);
 	controller.set_value("MotorJumpForce",         &new_acceleration);
-	controller.set_value("PhysicsGravityModifier", &new_gravity);
-
-	// Crouch Height
-	//controller.set_value("m_CrouchHeight", &new_crouch);
-
-	// Rotation
-	//vec3 new_rotation = vec3(RandomFloat(0, 360), RandomFloat(0, 360), RandomFloat(0, 360));
-	//vp_Camera_SetRotation(this_, new_rotation, true, true);
-	
+	controller.set_value("PhysicsGravityModifier", &new_gravity);	
 
 	// TP
 	if (GetAsyncKeyState(VK_SHIFT) & 1) {
@@ -168,10 +151,10 @@ DWORD WINAPI mainThread(HMODULE hModule)
 
 		// Hooks
 
-		auto update_hook = global_namespace.klass("RemotePlayersController").method("Update", 0)
+		global_namespace.klass("RemotePlayersController").method("Update", 0)
 		.hook<RemotePlayersController_Update_t>(memory, RemotePlayersController_Update, &RemotePlayersController_Update_original);
 
-		auto update2_hook = global_namespace.klass("vp_FPCamera").method("Update", 0)
+		global_namespace.klass("vp_FPCamera").method("Update", 0)
 		.hook<vp_Camera_Update_t>(memory, vp_Camera_Update, &vp_Camera_Update_original);
 
 		while (true) {};
