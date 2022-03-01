@@ -10,18 +10,18 @@ namespace IL2CPP {
 	size_t assemblies_size;
 
 	namespace API {
-#define DO_API(r, n, p) IL2CPP_DECLARATION(n)
-#include IL2CPP_API_H
-#undef DO_API
+		#define DO_API(r, n, p) IL2CPP_DECLARATION(n)
+		#include IL2CPP_API_H
+		#undef DO_API
 	}
 
 	bool Initialize(Memory memory)
 	{
 		void* game_assembly = memory.find_module("GameAssembly.dll");
 
-#define DO_API(r, n, p) IL2CPP_FIND_FUNCTION(n)
-#include IL2CPP_API_H
-#undef DO_API
+		#define DO_API(r, n, p) IL2CPP_FIND_FUNCTION(n)
+		#include IL2CPP_API_H
+		#undef DO_API
 
 		domain = API::il2cpp_domain_get();
 		assemblies = API::il2cpp_domain_get_assemblies(domain, &assemblies_size);
