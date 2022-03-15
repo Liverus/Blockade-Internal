@@ -15,21 +15,12 @@
 #include "hook.h"
 
 
-struct IL2CPP_ASSEMBLY;
-struct IL2CPP_NAMESPACE;
-struct IL2CPP_CLASS;
-struct IL2CPP_FIELD;
-struct IL2CPP_METHOD;
-struct IL2CPP_OBJECT;
-struct IL2CPP_ARRAY;
-struct IL2CPP_STRING;
-
-
 namespace IL2CPP
 {
 	extern Il2CppDomain* domain;
-	extern const Il2CppAssembly** assemblies;
-	extern size_t assemblies_size;
+
+	bool Initialize(MEMORY memory);
+	void Attach();
 
 	namespace API {
 		#define DO_API(r, n, p) IL2CPP_EXTERN_DECLARATION(n)
@@ -37,197 +28,173 @@ namespace IL2CPP
 		#undef DO_API
 	}
 
-	bool Initialize(Memory memory);
-	void Attach();
+	struct METHOD;
+	struct STRING;
+	struct ASSEMBLY;
+	struct CLASS;
+	struct FIELD;
+	struct NAMESPACE;
+	struct ARRAY;
+	struct STRING;
+	struct OBJECT;
+	struct TYPE;
 
-	IL2CPP_OBJECT Object(Il2CppObject* obj);
-	IL2CPP_CLASS Klass(Il2CppClass* klass);
-	IL2CPP_STRING String(const char* name);
-	IL2CPP_STRING String(Il2CppString* str);
-	IL2CPP_ASSEMBLY Assembly(const char* assembly_name);
-	IL2CPP_NAMESPACE Namespace(IL2CPP_ASSEMBLY assembly, const char* namespace_name);
-	IL2CPP_ARRAY Array(Il2CppArray* arr);
-};
+	struct METHOD : MethodInfo {
+		const char* Name();
 
+		template <class T>
+		HOOK* Hook(MEMORY memory, void* new_method, T* original) {
+			auto new_hook = Hook<T>(memory, new_method);
+			*original = new_hook->get_original<T>();
 
+			return new_hook;
+		}
 
-// IL2CP_ASSEMBLY
+		template <class T>
+		HOOK* Hook(MEMORY memory, void* new_method) {
+			auto new_hook = new HOOK(memory, this->FindFunction<T>(), new_method);
 
-struct IL2CPP_ASSEMBLY {
-	IL2CPP_ASSEMBLY();
-	IL2CPP_ASSEMBLY(Il2CppAssembly* assembly);
-	IL2CPP_ASSEMBLY(const char* assembly_name);
+			new_hook->load();
 
-	IL2CPP_NAMESPACE global_namespaze();
-	IL2CPP_NAMESPACE namespaze(const char* assembly_name);
+			return new_hook;
+		}
 
-	Il2CppImage* image();
-
-	const Il2CppAssembly* assembly;
-};
-
-
-
-// IL2CPP_NAMESPACE
-
-struct IL2CPP_NAMESPACE {
-	IL2CPP_NAMESPACE(IL2CPP_ASSEMBLY assembly, const char* namespace_name);
-
-	IL2CPP_CLASS klass(const char* class_name);
-
-	IL2CPP_ASSEMBLY assembly;
-	const char* name;
-};
-
-
-
-// IL2CPP_CLASS
-
-struct IL2CPP_CLASS {
-	IL2CPP_CLASS();
-	IL2CPP_CLASS(Il2CppClass* klass);
-
-	IL2CPP_METHOD method(const char* method_name, int args_count);
-	//const MethodInfo* methods(void** iter);
-
-	IL2CPP_FIELD field(const char* field_name);
-	//FieldInfo* fields(void** iter);
-
-	const PropertyInfo* property(const char* property_name);
-	//const PropertyInfo* properties(void** iter);
-
-	const char* name();
-	const char* namespaze();
-	const char* assemblyname();
-	const Il2CppImage* image();
-
-	Il2CppClass* klass;
-};
-
-
-
-// IL2CPP_FIELD
-
-struct IL2CPP_FIELD {
-	IL2CPP_FIELD(FieldInfo* fieldinfo);
-
-	const char* name();
-	size_t offset();
-	void set_value(Il2CppObject* obj, void* value);
-
-	template <class T>
-	T get_value(Il2CppObject* obj) {
-
-		T ret;
-
-		IL2CPP::API::il2cpp_field_get_value(obj, field, &ret);
-
-		return ret;
+		template <class T>
+		T FindFunction() {
+			return (T)this->methodPointer;
+		}
 	};
 
-	FieldInfo* field;
-};
-
-
-
-// IL2CPP_METHOD
-
-struct IL2CPP_METHOD {
-	IL2CPP_METHOD(const MethodInfo* methodinfo);
-
-	const char* name();
-
-	template <class T>
-	Hook* hook(Memory memory, void* new_method, T* original) {
-		auto new_hook = hook<T>(memory, new_method);
-		*original = new_hook->get_original<T>();
-
-		return new_hook;
-	}
-
-	template <class T>
-	Hook* hook(Memory memory, void* new_method) {
-		auto new_hook = new Hook(memory, this->get_function<T>(), new_method);
-
-		new_hook->load();
-
-		return new_hook;
-	}
-
-	template <class T>
-	T get_function() {
-		return (T)method->methodPointer;
-	}
-
-	const MethodInfo* method;
-};
-
-
-
-// IL2CPP_TYPE
-
-struct IL2CPP_TYPE {
-	IL2CPP_TYPE(Il2CppType* type_);
-
-	IL2CPP_CLASS klass();
-	const char* name();
-
-	Il2CppType* type;
-};
-
-
-
-// IL2CPP_OBJECT
-
-struct IL2CPP_OBJECT {
-	IL2CPP_OBJECT(Il2CppObject* obj_);
-
-	template <class T>
-	T get_value(const char* field_name) {
-		return obj_klass.field(field_name).get_value<T>(obj);
+	struct STRING : Il2CppString {
+		const size_t Length();
+		const wchar_t* WChars();
 	};
 
-	void set_value(const  char* field_name, void* value);
+	struct ASSEMBLY : Il2CppAssembly {
+		NAMESPACE* Namespace(const char* assembly_name);
 
-	IL2CPP_CLASS klass();
+		Il2CppImage* Image();
+		ASSEMBLY* List(size_t* size);
+	};
 
-	IL2CPP_CLASS obj_klass;
-	Il2CppObject* obj;
-};
+	struct NAMESPACE {
+		NAMESPACE(ASSEMBLY* assembly_, const char* name_);
 
+		CLASS* Class(const char* class_name);
 
+		ASSEMBLY* assembly;
+		const char* name;
+	};
 
-// IL2CPP_ARRAY
+	struct CLASS : Il2CppClass {
+		TYPE* Type(const char* field_name);
 
-struct IL2CPP_ARRAY {
-	IL2CPP_ARRAY(Il2CppArray* aray_);
+		METHOD* Method(const char* method_name, int args_count = 0);
+		//const MethodInfo* methods(void** iter);
 
-	size_t max_length();
+		FIELD* Field(const char* field_name);
+		//FieldInfo* fields(void** iter);
 
-	template <class T>
-	T* loop() {
-		return (T*)((ptr_t)aray + sizeof(Il2CppArray));
+		const PropertyInfo* Property(const char* property_name);
+		//const PropertyInfo* properties(void** iter);
+
+		const char* Name();
+		const char* Namespaze();
+		const char* AssemblyName();
+		const Il2CppImage* Image();
+	};
+
+	struct FIELD : FieldInfo {
+		const char* Name();
+		size_t Offset();
+		void SetValue(OBJECT* obj, void* value);
+		void SetStaticValue(void* value);
+
+		TYPE* Type();
+
+		template <class T>
+		T GetValue(OBJECT* obj) {
+
+			T ret;
+
+			API::il2cpp_field_get_value(obj, this, &ret);
+
+			return ret;
+		};
+
+		template <class T>
+		T GetStaticValue() {
+
+			T ret;
+
+			API::il2cpp_field_static_get_value(this, &ret);
+
+			return ret;
+		};
+
+		OBJECT* GetObject(OBJECT* obj);
+		ARRAY*  GetArray(OBJECT* obj);
+		STRING* GetString(OBJECT* obj);
+
+		OBJECT* GetStaticObject();
+		ARRAY*  GetStaticArray();
+		STRING* GetStaticString();
+	};
+
+	struct TYPE : Il2CppType {
+		CLASS* Class();
+		const char* Name();
+	};
+
+	struct OBJECT : Il2CppObject {
+		FIELD* Field(const char* field_name);
+
+		template <class T>
+		T GetValue(const char* field_name) {
+			return Field(field_name)->GetValue<T>(this);
+		};
+
+		ARRAY* GetArray(const char* field_name);
+		STRING* GetString(const char* field_name);
+		OBJECT* GetObject(const char* field_name);
+
+		void SetValue(const  char* field_name, void* value);
+
+		CLASS* Class();
+		TYPE* Type(const char* field_name);
+	};
+
+	struct ARRAY : Il2CppArray {
+		size_t MaxLength();
+
+		template <class T>
+		T* GetArray() {
+			return (T*)((ptr_t)this + sizeof(Il2CppArray));
+		}
+
+		template <class T>
+		T GetIndex(size_t id) {
+			return GetArray<T>()[id];
+		}
+
+		OBJECT* GetObject(size_t id);
+		STRING* GetString(size_t id);
+	};
+
+	ASSEMBLY* Assembly(const char* name);
+	NAMESPACE* Namespace(ASSEMBLY* assembly, const char* name);
+	STRING* String(const char* str);
+
+	FIELD*  Field(const char* klass_name, const char* field_name);
+	FIELD*  Field(const char* namespace_name, const char* klass_name, const char* field_name);
+	FIELD*  Field(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* field_name);
+
+	METHOD* Method(const char* klass_name, const char* method_name, int param_count);
+	METHOD* Method(const char* namespace_name, const char* klass_name, const char* method_name, int param_count);
+	METHOD* Method(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* method_name, int param_count);
+
+	template<class T>
+	T Function(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* method_name, int param_count) {
+		return Method(assembly_name, namespace_name, klass_name, method_name, param_count)->FindFunction<T>();
 	}
-
-	template <class T>
-	T get_index(size_t id) {
-		return loop<T>()[id];
-		//return (T)((ptr_t)(loop<T>()) + id * sizeof(void*));
-	}
-
-	Il2CppArray* aray;
-};
-
-
-
-// IL2CPP_STRING
-
-struct IL2CPP_STRING {
-	IL2CPP_STRING(Il2CppString* str_);
-
-	bool equal(IL2CPP_STRING);
-	const size_t length();
-	const wchar_t* wchars();
-
-	Il2CppString* str;
 };

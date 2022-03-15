@@ -1,13 +1,9 @@
 #include "il2cpp.h"
-#include <iostream>
-
 
 
 namespace IL2CPP {
 
 	Il2CppDomain* domain;
-	const Il2CppAssembly** assemblies;
-	size_t assemblies_size;
 
 	namespace API {
 		#define DO_API(r, n, p) IL2CPP_DECLARATION(n)
@@ -15,7 +11,7 @@ namespace IL2CPP {
 		#undef DO_API
 	}
 
-	bool Initialize(Memory memory)
+	bool Initialize(MEMORY memory)
 	{
 		void* game_assembly = memory.find_module("GameAssembly.dll");
 
@@ -24,7 +20,6 @@ namespace IL2CPP {
 		#undef DO_API
 
 		domain = API::il2cpp_domain_get();
-		assemblies = API::il2cpp_domain_get_assemblies(domain, &assemblies_size);
 
 		return true;
 	}
@@ -32,219 +27,207 @@ namespace IL2CPP {
 	void Attach() {
 		API::il2cpp_thread_attach(domain);
 	}
+	
+	// ASSEMBLY
 
-	IL2CPP_STRING String(const char* name) {
-		return IL2CPP_STRING(API::il2cpp_string_new(name));
+	Il2CppImage* ASSEMBLY::Image() {
+		return this->image;
 	}
 
-	IL2CPP_STRING String(Il2CppString* str) {
-		return IL2CPP_STRING(str);
+	NAMESPACE* ASSEMBLY::Namespace(const char* namespace_name) {
+		return new NAMESPACE(this, namespace_name);
 	}
 
-	IL2CPP_ASSEMBLY Assembly(const char* assembly_name) {
-		return IL2CPP_ASSEMBLY(assembly_name);
+	ASSEMBLY* ASSEMBLY::List(size_t* size) {
+		return (ASSEMBLY*)IL2CPP::API::il2cpp_domain_get_assemblies(domain, size);
 	}
 
-	IL2CPP_NAMESPACE Namespace(IL2CPP_ASSEMBLY assembly, const char* namespace_name) {
-		return IL2CPP_NAMESPACE(assembly, namespace_name);
+	// NAMESPACE
+
+	NAMESPACE::NAMESPACE(ASSEMBLY* assembly_, const char* name_) {
+		assembly = assembly_;
+		name = name_;
 	}
 
-	IL2CPP_OBJECT Object(Il2CppObject* obj) {
-		return IL2CPP_OBJECT(obj);
+	CLASS* NAMESPACE::Class(const char* class_name) {
+		return (CLASS*)API::il2cpp_class_from_name(assembly->Image(), name, class_name);
 	}
 
-	IL2CPP_CLASS Klass(Il2CppClass* klass) {
-		return IL2CPP_CLASS(klass);
+	// CLASS
+
+	TYPE* CLASS::Type(const char* field_name) {
+		return Field(field_name)->Type();
 	}
 
-	IL2CPP_ARRAY Array(Il2CppArray* array) {
-		return IL2CPP_ARRAY(array);
+	METHOD* CLASS::Method(const char* method_name, int args_count) {
+		return (METHOD*)API::il2cpp_class_get_method_from_name(klass, method_name, args_count);
+	};
+
+	FIELD* CLASS::Field(const char* field_name) {
+		return (FIELD*)API::il2cpp_class_get_field_from_name(klass, field_name);
+	}
+
+	const char* CLASS::Name() {
+		return  IL2CPP::API::il2cpp_class_get_name(klass);
+	}
+
+	const char* CLASS::Namespaze() {
+		return  IL2CPP::API::il2cpp_class_get_namespace(klass);
+	}
+
+	const char* CLASS::AssemblyName() {
+		return  IL2CPP::API::il2cpp_class_get_assemblyname(klass);
+	}
+
+	const Il2CppImage* CLASS::Image() {
+		return IL2CPP::API::il2cpp_class_get_image(klass);
+	}
+
+	// FIELD
+
+	const char* FIELD::Name() {
+		return IL2CPP::API::il2cpp_field_get_name(this);
+	}
+
+	TYPE* FIELD::Type() {
+		return (TYPE*)API::il2cpp_field_get_type(this);
+	}
+
+	size_t FIELD::Offset() {
+		return API::il2cpp_field_get_offset(this);
+	}
+
+	void FIELD::SetValue(OBJECT* obj, void* value) {
+		API::il2cpp_field_set_value(obj, this, value);
+	}
+
+	void FIELD::SetStaticValue(void* value) {
+		API::il2cpp_field_static_set_value(this, value);
+	}
+
+	OBJECT* FIELD::GetObject(OBJECT* obj) {
+		return GetValue<OBJECT*>(obj);
+	}
+
+	ARRAY* FIELD::GetArray(OBJECT* obj) {
+		return GetValue<ARRAY*>(obj);
+	}
+
+	STRING* FIELD::GetString(OBJECT* obj) {
+		return GetValue<STRING*>(obj);
+	}
+
+	OBJECT* FIELD::GetStaticObject() {
+		return GetStaticValue<OBJECT*>();
+	}
+
+	ARRAY* FIELD::GetStaticArray() {
+		return GetStaticValue<ARRAY*>();
+	}
+
+	STRING* FIELD::GetStaticString() {
+		return GetStaticValue<STRING*>();
+	}
+
+	// Method
+
+	const char* METHOD::Name() {
+		return API::il2cpp_method_get_name(this);
+	}
+
+	// Type
+
+	CLASS* TYPE::Class() {
+		return (CLASS*)API::il2cpp_type_get_class_or_element_class(this);
+	}
+
+	const char* TYPE::Name() {
+		return API::il2cpp_type_get_name(this);
+	}
+
+	// IL2CPP_OBJECT
+
+	FIELD* OBJECT::Field(const char* field_name) {
+		return Class()->Field(field_name);
+	}
+
+	OBJECT* OBJECT::GetObject(const char* field_name) {
+		return Field(field_name)->GetObject(this);
+	}
+
+	ARRAY* OBJECT::GetArray(const char* field_name) {
+		return Field(field_name)->GetArray(this);
+	}
+
+	STRING* OBJECT::GetString(const char* field_name) {
+		return Field(field_name)->GetString(this);
+	}
+
+	CLASS* OBJECT::Class() {
+		return (CLASS*)API::il2cpp_object_get_class(this);
+	}
+
+	TYPE* OBJECT::Type(const char* field_name) {
+		return Field(field_name)->Type();
+	}
+
+	void OBJECT::SetValue(const char* field_name, void* value) {
+		Field(field_name)->SetValue(this, value);
+	}
+
+	// IL2CPP_ARRAY
+
+	size_t ARRAY::MaxLength() {
+		return this->max_length;
+	}
+
+	OBJECT* ARRAY::GetObject(size_t id) {
+		return GetIndex<OBJECT*>(id);
+	}
+
+	STRING* ARRAY::GetString(size_t id) {
+		return GetIndex<STRING*>(id);
+	}
+
+
+	const size_t STRING::Length() {
+		return API::il2cpp_string_length(this);
+	}
+
+	const wchar_t* STRING::WChars() {
+		return (wchar_t*)API::il2cpp_string_chars(this);
+	}
+
+	ASSEMBLY* Assembly(const char* assembly_name) {
+		return (ASSEMBLY*)API::il2cpp_domain_assembly_open(domain, assembly_name);
+	}
+
+	STRING* String(const char* str)
+	{
+		return (STRING*)API::il2cpp_string_new(str);
+	}
+
+	FIELD* Field(const char* klass_name, const char* field_name) {
+		return Field("", klass_name, field_name);
+	}
+
+	FIELD* Field(const char* namespace_name, const char* klass_name, const char* field_name) {
+		return Field("Assembly-CSharp", namespace_name, klass_name, field_name);
+	}
+
+	FIELD* Field(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* field_name) {
+		return Assembly(assembly_name)->Namespace(namespace_name)->Class(klass_name)->Field(field_name);
+	}
+
+	METHOD* Method(const char* klass_name, const char* method_name, int param_count) {
+		return Method("", klass_name, method_name, param_count);
+	}
+
+	METHOD* Method(const char* namespace_name, const char* klass_name, const char* method_name, int param_count) {
+		return Method("Assembly-CSharp", namespace_name, klass_name, method_name, param_count);
+	}
+
+	METHOD* Method(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* method_name, int param_count) {
+		return Assembly(assembly_name)->Namespace(namespace_name)->Class(klass_name)->Method(method_name, param_count);
 	}
 }
-
-
-
-// IL2CPP_ASSEMBLY
-
-IL2CPP_ASSEMBLY::IL2CPP_ASSEMBLY() {};
-
-IL2CPP_ASSEMBLY::IL2CPP_ASSEMBLY(Il2CppAssembly* assembly_) {
-	assembly = assembly_;
-}
-
-IL2CPP_ASSEMBLY::IL2CPP_ASSEMBLY(const char* assembly_name) {
-	assembly = IL2CPP::API::il2cpp_domain_assembly_open(IL2CPP::domain, assembly_name);
-}
-
-Il2CppImage* IL2CPP_ASSEMBLY::image() {
-	return assembly->image;
-}
-
-IL2CPP_NAMESPACE IL2CPP_ASSEMBLY::namespaze(const char* namespace_name) {
-	return IL2CPP::Namespace(*this, namespace_name);
-}
-
-IL2CPP_NAMESPACE IL2CPP_ASSEMBLY::global_namespaze() {
-	return IL2CPP::Namespace(*this, "");
-}
-
-
-
-// IL2CPP_NAMESPACE
-
-IL2CPP_NAMESPACE::IL2CPP_NAMESPACE(IL2CPP_ASSEMBLY namespace_assembly, const char* namespace_name) {
-	name = namespace_name;
-	assembly = namespace_assembly;
-}
-
-IL2CPP_CLASS IL2CPP_NAMESPACE::klass(const char* klass_name) {
-	return IL2CPP::API::il2cpp_class_from_name(assembly.image(), name, klass_name);
-}
-
-
-
-// IL2CPP_CLASS
-
-IL2CPP_CLASS::IL2CPP_CLASS() {};
-
-IL2CPP_CLASS::IL2CPP_CLASS(Il2CppClass* klass_) {
-	klass = klass_;
-}
-
-IL2CPP_METHOD IL2CPP_CLASS::method(const char* method_name, int args_count) {
-	return IL2CPP_METHOD(IL2CPP::API::il2cpp_class_get_method_from_name(klass, method_name, args_count));
-};
-
-//const MethodInfo* IL2CPP_CLASS::methods(void** iter) {
-//	return IL2CPP::API::il2cpp_class_get_methods(klass, iter);
-//};
-
-IL2CPP_FIELD IL2CPP_CLASS::field(const char* field_name) {
-	return IL2CPP_FIELD(IL2CPP::API::il2cpp_class_get_field_from_name(klass, field_name));
-}
-
-//IL2CPP_FIELD* IL2CPP_CLASS::fields(void** iter) {
-//	return IL2CPP::API::il2cpp_class_get_fields(klass, iter);
-//};
-
-const PropertyInfo* IL2CPP_CLASS::property(const char* property_name) {
-	return IL2CPP::API::il2cpp_class_get_property_from_name(klass, property_name);
-}
-
-//const PropertyInfo* IL2CPP_CLASS::properties(void** iter) {
-//	return IL2CPP::API::il2cpp_class_get_properties(klass, iter);
-//};
-
-const char* IL2CPP_CLASS::name() {
-	return  IL2CPP::API::il2cpp_class_get_name(klass);
-}
-
-const char* IL2CPP_CLASS::namespaze() {
-	return  IL2CPP::API::il2cpp_class_get_namespace(klass);
-}
-
-const char* IL2CPP_CLASS::assemblyname() {
-	return  IL2CPP::API::il2cpp_class_get_assemblyname(klass);
-}
-
-const Il2CppImage* IL2CPP_CLASS::image() {
-	return IL2CPP::API::il2cpp_class_get_image(klass);
-}
-
-
-
-// IL2CPP_FIELD
-
-IL2CPP_FIELD::IL2CPP_FIELD(FieldInfo* fieldinfo) {
-	field = fieldinfo;
-}
-
-const char* IL2CPP_FIELD::name() {
-	return IL2CPP::API::il2cpp_field_get_name(field);
-}
-
-size_t IL2CPP_FIELD::offset() {
-	return IL2CPP::API::il2cpp_field_get_offset(field);
-}
-
-void IL2CPP_FIELD::set_value(Il2CppObject* obj, void* value) {
-	IL2CPP::API::il2cpp_field_set_value(obj, field, value);
-}
-
-
-
-// IL2CPP_METHOD
-
-IL2CPP_METHOD::IL2CPP_METHOD(const MethodInfo* methodinfo) {
-	method = methodinfo;
-}
-
-const char* IL2CPP_METHOD::name() {
-	return IL2CPP::API::il2cpp_method_get_name(method);
-}
-
-
-
-// IL2CPP_TYPE
-
-IL2CPP_TYPE::IL2CPP_TYPE(Il2CppType* type_) {
-	type = type;
-}
-
-IL2CPP_CLASS IL2CPP_TYPE::klass() {
-	return IL2CPP::Klass(IL2CPP::API::il2cpp_type_get_class_or_element_class(type));
-}
-
-const char* IL2CPP_TYPE::name() {
-	return IL2CPP::API::il2cpp_type_get_name(type);
-}
-
-
-
-// IL2CPP_OBJECT
-
-IL2CPP_OBJECT::IL2CPP_OBJECT(Il2CppObject* obj_) {
-	obj = obj_;
-	obj_klass = IL2CPP::Klass(IL2CPP::API::il2cpp_object_get_class(obj));
-}
-
-IL2CPP_CLASS IL2CPP_OBJECT::klass() {
-	return obj_klass;
-}
-
-void IL2CPP_OBJECT::set_value(const char* field_name, void* value) {
-	obj_klass.field(field_name).set_value(obj, value);
-}
-
-
-
-// IL2CPP_ARRAY
-
-IL2CPP_ARRAY::IL2CPP_ARRAY(Il2CppArray* aray_) {
-	aray = aray_;
-}
-
-size_t IL2CPP_ARRAY::max_length() {
-	return aray->max_length;
-}
-
-
-
-// IL2CPP_STRING
-
-IL2CPP_STRING::IL2CPP_STRING(Il2CppString* str_) {
-	str = str_;
-}
-
-const size_t IL2CPP_STRING::length() {
-	return IL2CPP::API::il2cpp_string_length(str);
-}
-
-const wchar_t* IL2CPP_STRING::wchars() {
-	return (wchar_t*)IL2CPP::API::il2cpp_string_chars(str);
-}
-
-bool IL2CPP_STRING::equal(IL2CPP_STRING str) {
-	return !wcscmp(this->wchars(), str.wchars());
-}
-

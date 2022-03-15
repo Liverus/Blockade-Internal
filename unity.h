@@ -26,7 +26,7 @@ namespace Unity
 		return (T)IL2CPP::API::il2cpp_resolve_icall(function_name);
 	}
 
-	bool Initialize(Memory memory);
+	bool Initialize(MEMORY memory);
 
 	extern unity_GameObject_FindGameObjectsWithTag_t GameObject_FindGameObjectsWithTag;
 	extern unity_GameObject_GetTransform_t GameObject_GetTransform;

@@ -10,7 +10,7 @@ namespace Unity {
 	unity_Screen_GetWidth_t Screen_GetWidth;
 	unity_Screen_GetHeight_t Screen_GetHeight;
 
-	bool Initialize(Memory memory) {
+	bool Initialize(MEMORY memory) {
 		
 		//GameObject_FindGameObjectsWithTag = find_function<unity_GameObject_FindGameObjectsWithTag_t>("UnityEngine.GameObject::FindGameObjectsWithTag(System.String)");
 		GameObject_FindGameObjectsWithTag = find_function<unity_GameObject_FindGameObjectsWithTag_t>("UnityEngine.GameObject::Find(System.String)");
