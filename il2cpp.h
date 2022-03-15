@@ -185,13 +185,9 @@ namespace IL2CPP
 	NAMESPACE* Namespace(ASSEMBLY* assembly, const char* name);
 	STRING* String(const char* str);
 
-	FIELD*  Field(const char* klass_name, const char* field_name);
-	FIELD*  Field(const char* namespace_name, const char* klass_name, const char* field_name);
-	FIELD*  Field(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* field_name);
-
-	METHOD* Method(const char* klass_name, const char* method_name, int param_count);
-	METHOD* Method(const char* namespace_name, const char* klass_name, const char* method_name, int param_count);
-	METHOD* Method(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* method_name, int param_count);
+	CLASS*  Class(const char* assembly_name, const char* namespace_name, const char* class_name);
+	FIELD*  Field(const char* assembly_name, const char* namespace_name, const char* class_name, const char* field_name);
+	METHOD* Method(const char* assembly_name, const char* namespace_name, const char* class_name, const char* method_name, int param_count);
 
 	template<class T>
 	T Function(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* method_name, int param_count) {

@@ -202,32 +202,19 @@ namespace IL2CPP {
 		return (ASSEMBLY*)API::il2cpp_domain_assembly_open(domain, assembly_name);
 	}
 
-	STRING* String(const char* str)
-	{
+	STRING* String(const char* str){
 		return (STRING*)API::il2cpp_string_new(str);
 	}
 
-	FIELD* Field(const char* klass_name, const char* field_name) {
-		return Field("", klass_name, field_name);
+	CLASS* Class(const char* assembly_name, const char* namespace_name, const char* class_name) {
+		return Assembly(assembly_name)->Namespace(namespace_name)->Class(class_name);
 	}
 
-	FIELD* Field(const char* namespace_name, const char* klass_name, const char* field_name) {
-		return Field("Assembly-CSharp", namespace_name, klass_name, field_name);
+	FIELD* Field(const char* assembly_name, const char* namespace_name, const char* class_name, const char* field_name) {
+		return Class(assembly_name, namespace_name, class_name)->Field(field_name);
 	}
 
-	FIELD* Field(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* field_name) {
-		return Assembly(assembly_name)->Namespace(namespace_name)->Class(klass_name)->Field(field_name);
-	}
-
-	METHOD* Method(const char* klass_name, const char* method_name, int param_count) {
-		return Method("", klass_name, method_name, param_count);
-	}
-
-	METHOD* Method(const char* namespace_name, const char* klass_name, const char* method_name, int param_count) {
-		return Method("Assembly-CSharp", namespace_name, klass_name, method_name, param_count);
-	}
-
-	METHOD* Method(const char* assembly_name, const char* namespace_name, const char* klass_name, const char* method_name, int param_count) {
-		return Assembly(assembly_name)->Namespace(namespace_name)->Class(klass_name)->Method(method_name, param_count);
+	METHOD* Method(const char* assembly_name, const char* namespace_name, const char* class_name, const char* method_name, int param_count) {
+		return Class(assembly_name, namespace_name, class_name)->Method(method_name, param_count);
 	}
 }
