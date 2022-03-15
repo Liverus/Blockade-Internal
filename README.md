@@ -6,9 +6,10 @@ You can implement your own features by using Il2CppDumper + DnSpy and inspecting
 
 
 ## Features
-- ESP (Sets every player to the same team, we use the game's default ESP)
-- Speedhack (We go from 0.18 to 0.25 speed)
-- No Gravity
+- Very buggy aimbot (Right-click, targets everyone and loves to aim at ground)
+- Chams
+- Speedhack (We go from 0.18 to 0.22 speed)
+- Low Gravity
 - 2-blocks instant jump when pressing SHIFT
 
 ## Disclaimer
@@ -23,7 +24,7 @@ Here are some examples of how to use my wrappers:
 
 Initialize
 ```c++
-Memory memory;
+MEMORY memory;
 
 IL2CPP::Initialize(memory);
 IL2CPP::Attach();
@@ -32,17 +33,17 @@ IL2CPP::Attach();
 Access the global namespace of Assembly-CSharp
 ```c++
 auto assembly_csharp  = IL2CPP::Assembly("Assembly-CSharp");
-auto global_namespace = assembly_csharp.global_namespaze();
+auto global_namespace = assembly_csharp->Namespace("");
 ```
 
 Access function pointer of a class method
 ```c++
-vp_Controller_AddForce = global_namespace.klass("vp_FPController").method("AddForce", 1) // 1 is the method's arg count
-.get_function<vp_Controller_AddForce_t>();
+vp_Controller_AddForce = global_namespace->Class("vp_FPController")->Method("AddForce", 1) // 1 is the method's arg count
+->FindFunction<vp_Controller_AddForce_t>();
 ```
 
 Hook a function of a class method
 ```c++
-auto update_hook = global_namespace.klass("RemotePlayersController").method("Update", 0) // 0 is the method's arg count
-.hook<RemotePlayersController_Update_t>(memory, RemotePlayersController_Update, &RemotePlayersController_Update_original);
+auto update_hook = global_namespace->Class("RemotePlayersController")->Method("Update", 0) // 0 is the method's arg count
+->Hook<RemotePlayersController_Update_t>(memory, RemotePlayersController_Update, &RemotePlayersController_Update_original);
 ```
