@@ -19,7 +19,7 @@ This source code is provided for educational purpose only. I'm not responsible i
 
 ## IL2CPP
 
-So from what I understand you have to hook a class's function in order to get its instances. (Il2CppObject*)
+So from what I understand you have to hook a class's function in order to get its instances, or just get it from static fields. (Il2CppObject*)
 
 Here are some examples of how to use my wrappers:
 
