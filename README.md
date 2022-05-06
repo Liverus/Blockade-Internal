@@ -4,6 +4,7 @@ This is an internal cheat for the game BLOCKADE Classic, a free unity-il2cpp gam
 The only point of this project is to learn IL2CPP API and make my wrappers for it. This is why the features are kinda pointless.
 You can implement your own features by using Il2CppDumper + DnSpy and inspecting the game's assemblies.
 
+![Showcase](https://user-images.githubusercontent.com/44021130/158893570-bff9f69a-a8bc-4a35-90bd-ccee30e4aed7.png)
 
 ## Features
 - Very buggy aimbot (Right-click, targets everyone and loves to aim at ground)
@@ -18,7 +19,7 @@ This source code is provided for educational purpose only. I'm not responsible i
 
 ## IL2CPP
 
-So from what I understand you have to hook a class's function in order to get its instances. (Il2CppObject*)
+So from what I understand you have to hook a class's function in order to get its instances, or just get it from static fields. (Il2CppObject*)
 
 Here are some examples of how to use my wrappers:
 
